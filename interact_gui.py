@@ -123,7 +123,7 @@ class PointDataAquisition(object):
                 text_in_data_coords = self.axes.transData.inverted().transform(
                     (text_in_data_coords[0] + text_x_offset, text_in_data_coords[1] + text_y_offset))
                 #self.axes.text(text_in_data_coords[0], text_in_data_coords[1], str(i), color='yellow')
-        self.axes.set_title('You selected {0} points'.format(len(self.point_indexes)))
+        # self.axes.set_title('You selected {0} points'.format(len(self.point_indexes)))
         self.axes.set_axis_off()
 
         # Set the zoom factor back to what it was before we cleared the axes, and rendered our data.
@@ -169,7 +169,11 @@ class PointDataAquisition(object):
         return [tuple(map(lambda x: int(round(x)), pnt)) for pnt in self.point_indexes]
 
     def save_current_image(self, filename):
-        sitk.WriteImage(self.npa[self.slice_slider.value, :, :], filename)
+        ext_filename = filename + ".jpg"
+        self.fig.savefig(ext_filename)
+        img = sitk.ReadImage(ext_filename)
+        new_filename = filename + ".dcm"
+        sitk.WriteImage(img, new_filename)
 
 
     def __call__(self, event):
