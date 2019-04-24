@@ -48,9 +48,9 @@ class PointDataAquisition(object):
         # Display the data and the controls, first time we display the image is outside the "update_display" method
         # as that method relies on the previous zoom factor which doesn't exist yet.
         self.axes.imshow(self.npa[self.slice_slider.value, :, :],
-                            cmap=plt.cm.Greys_r,
-                            vmin=self.min_intensity,
-                            vmax=self.max_intensity)
+                            cmap=plt.cm.Greys_r)
+                            #vmin=self.min_intensity,
+                            #vmax=self.max_intensity)
         self.update_display()
         display(ui)
 
@@ -106,9 +106,9 @@ class PointDataAquisition(object):
         # Draw the image and localized points.
         self.axes.clear()
         self.axes.imshow(self.npa[self.slice_slider.value, :, :],
-                         cmap=plt.cm.Greys_r,
-                         vmin=self.min_intensity,
-                         vmax=self.max_intensity)
+                         cmap=plt.cm.Greys_r)
+                         #vmin=self.min_intensity,
+                         #vmax=self.max_intensity)
         # Positioning the text is a bit tricky, we position relative to the data coordinate system, but we
         # want to specify the shift in pixels as we are dealing with display. We therefore (a) get the data
         # point in the display coordinate system in pixel units (b) modify the point using pixel offset and
@@ -190,7 +190,7 @@ class PointDataAquisition(object):
         return [tuple(map(lambda x: int(round(x)), pnt)) for pnt in self.point_indexes]
 
     def save_current_image(self, filename):
-        self.axes.axis('off')
+        self.axes.set_axis_off()
         self.axes.spines['top'].set_visible(False)
         self.axes.spines['right'].set_visible(False)
         self.axes.spines['bottom'].set_visible(False)
@@ -205,17 +205,44 @@ class PointDataAquisition(object):
         self.axes.get_xaxis().set_ticks([])
         self.axes.get_yaxis().set_ticks([])
 
-        #self.axes.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        #self.axes.margins(0, 0)
+        self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.axes.margins(0, 0)
 
-        ext_filename = filename + ".jpg"
-
-        extent = self.axes.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
-        self.fig.savefig(ext_filename, pad_inches=0, bbox_inches=extent, nbins=0, transparent=True)
+        ext_filename = filename + '.jpg'
+        #extent = self.axes.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+        self.fig.savefig(ext_filename, pad_inches=-0.1, bbox_inches='tight')
         img = sitk.ReadImage(ext_filename)
         new_filename = filename + ".dcm"
         sitk.WriteImage(img, new_filename)
 
+    def save_all_images(self, filename, index):
+
+        self.axes.clear()
+        self.axes.set_axis_off()
+        self.axes.spines['top'].set_visible(False)
+        self.axes.spines['right'].set_visible(False)
+        self.axes.spines['bottom'].set_visible(False)
+        self.axes.spines['left'].set_visible(False)
+
+        self.axes.yaxis.set_ticks_position('left')
+        self.axes.xaxis.set_ticks_position('bottom')
+
+        self.axes.xaxis.set_major_locator(plt.NullLocator())
+        self.axes.yaxis.set_major_locator(plt.NullLocator())
+
+        self.axes.get_xaxis().set_ticks([])
+        self.axes.get_yaxis().set_ticks([])
+
+
+        self.fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.axes.margins(0, 0)
+        ext_filename = filename + '.jpg'
+
+        self.axes.imshow(self.npa[index, :, :], cmap=plt.cm.Greys_r)
+        self.fig.savefig(ext_filename, pad_inches=-0.1, bbox_inches='tight')
+        img = sitk.ReadImage(ext_filename)
+        new_filename = filename + ".dcm"
+        sitk.WriteImage(img, new_filename)
 
     def __call__(self, event):
         if self.viewing_checkbox.value == 'edit':
